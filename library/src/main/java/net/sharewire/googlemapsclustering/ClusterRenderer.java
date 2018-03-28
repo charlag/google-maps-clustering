@@ -32,9 +32,10 @@ class ClusterRenderer<T extends ClusterItem> implements GoogleMap.OnMarkerClickL
 
     private final List<Cluster<T>> mClusters = new ArrayList<>();
 
-    private final Map<Cluster<T>, Marker> mMarkers = new HashMap<>();
+    private final Map<Cluster<T>, MarkerState> mMarkers = new HashMap<>();
 
     private IconGenerator<T> mIconGenerator;
+    private RenderPostProcessor<T> renderPostProcessor;
 
     private ClusterManager.Callbacks<T> mCallbacks;
 
@@ -94,7 +95,7 @@ class ClusterRenderer<T extends ClusterItem> implements GoogleMap.OnMarkerClickL
 
         // Remove the old clusters.
         for (Cluster<T> clusterToRemove : clustersToRemove) {
-            Marker markerToRemove = mMarkers.get(clusterToRemove);
+            Marker markerToRemove = mMarkers.get(clusterToRemove).getMarker();
             markerToRemove.setZIndex(BACKGROUND_MARKER_Z_INDEX);
 
             Cluster<T> parentCluster = findParentCluster(mClusters, clusterToRemove.getLatitude(),
@@ -140,8 +141,23 @@ class ClusterRenderer<T extends ClusterItem> implements GoogleMap.OnMarkerClickL
             }
             markerToAdd.setTag(clusterToAdd);
 
-            mMarkers.put(clusterToAdd, markerToAdd);
+            mMarkers.put(clusterToAdd, new MarkerState(markerToAdd, false));
         }
+
+      for (Map.Entry<Cluster<T>, MarkerState> item : mMarkers.entrySet()) {
+        Cluster<T> cluster = item.getKey();
+        MarkerState markerState = item.getValue();
+
+        boolean isPostProcessed = this.renderPostProcessor != null
+            && this.renderPostProcessor.postProcess(markerState.getMarker(), cluster);
+        if (isPostProcessed) {
+          markerState.setDirty(true);
+        } else if (markerState.isDirty()) {
+          // there should be reset to non-dirty state
+          markerState.getMarker().setIcon(getMarkerIcon(cluster));
+          markerState.setDirty(false);
+        }
+      }
     }
 
     @NonNull
