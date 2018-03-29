@@ -74,6 +74,10 @@ class ClusterRenderer<T extends ClusterItem> implements GoogleMap.OnMarkerClickL
         mIconGenerator = iconGenerator;
     }
 
+    void setRenderPostProcessor(@Nullable  RenderPostProcessor<T> postProcessor) {
+        this.renderPostProcessor = postProcessor;
+    }
+
     void render(@NonNull List<Cluster<T>> clusters) {
         List<Cluster<T>> clustersToAdd = new ArrayList<>();
         List<Cluster<T>> clustersToRemove = new ArrayList<>();
@@ -145,19 +149,19 @@ class ClusterRenderer<T extends ClusterItem> implements GoogleMap.OnMarkerClickL
         }
 
       for (Map.Entry<Cluster<T>, MarkerState> item : mMarkers.entrySet()) {
-        Cluster<T> cluster = item.getKey();
-        MarkerState markerState = item.getValue();
+            Cluster<T> cluster = item.getKey();
+            MarkerState markerState = item.getValue();
 
-        boolean isPostProcessed = this.renderPostProcessor != null
-            && this.renderPostProcessor.postProcess(markerState.getMarker(), cluster);
-        if (isPostProcessed) {
-          markerState.setDirty(true);
-        } else if (markerState.isDirty()) {
-          // there should be reset to non-dirty state
-          markerState.getMarker().setIcon(getMarkerIcon(cluster));
-          markerState.setDirty(false);
+            boolean isPostProcessed = this.renderPostProcessor != null
+                && this.renderPostProcessor.postProcess(markerState.getMarker(), cluster);
+            if (isPostProcessed) {
+                markerState.setDirty(true);
+            } else if (markerState.isDirty()) {
+                // there should be reset to non-dirty state
+                markerState.getMarker().setIcon(getMarkerIcon(cluster));
+                markerState.setDirty(false);
+            }
         }
-      }
     }
 
     @NonNull

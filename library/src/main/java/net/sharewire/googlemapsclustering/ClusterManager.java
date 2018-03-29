@@ -123,6 +123,10 @@ public class ClusterManager<T extends ClusterItem> implements GoogleMap.OnCamera
         mMinClusterSize = minClusterSize;
     }
 
+    public void setRenderPostProcessor(RenderPostProcessor<T> postProcessor) {
+        mRenderer.setRenderPostProcessor(postProcessor);
+    }
+
     @Override
     public void onCameraIdle() {
         cluster();
